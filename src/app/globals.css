@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. Colours are chosen to meet WCAG AA contrast against their
+ * paired surfaces. Both light and dark schemes are defined and switch with the
+ * user's system preference.
+ */
+:root {
+  --background: #f6f8f6;
+  --surface: #ffffff;
+  --surface-muted: #eef2ee;
+  --foreground: #11221a;
+  --muted-foreground: #4b5a52;
+  --border: #d7e0d9;
+  --primary: #0f7a4d;
+  --primary-foreground: #ffffff;
+  --primary-hover: #0c6440;
+  --ring: #0f7a4d;
+
+  /* Semantic colours for insight levels (AA against --surface). */
+  --win: #0f7a4d;
+  --win-bg: #e3f3ea;
+  --opportunity: #9a5b00;
+  --opportunity-bg: #fbf0dd;
+  --info: #1f5fa8;
+  --info-bg: #e6effa;
+
+  /* Category accents, used consistently across charts and labels. */
+  --cat-transport: #2563b8;
+  --cat-energy: #b8860b;
+  --cat-diet: #0f7a4d;
+  --cat-shopping: #8b3fa8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0c1410;
+    --surface: #121e18;
+    --surface-muted: #18271f;
+    --foreground: #eaf2ec;
+    --muted-foreground: #a3b3aa;
+    --border: #273930;
+    --primary: #34c585;
+    --primary-foreground: #07150d;
+    --primary-hover: #4ad295;
+    --ring: #34c585;
+
+    --win: #4ad295;
+    --win-bg: #142a1f;
+    --opportunity: #e0a93f;
+    --opportunity-bg: #2c2415;
+    --info: #6fa8e6;
+    --info-bg: #16243a;
+
+    --cat-transport: #6fa8e6;
+    --cat-energy: #e0a93f;
+    --cat-diet: #4ad295;
+    --cat-shopping: #c98fe0;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-ring: var(--ring);
+  --color-win: var(--win);
+  --color-win-bg: var(--win-bg);
+  --color-opportunity: var(--opportunity);
+  --color-opportunity-bg: var(--opportunity-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-cat-transport: var(--cat-transport);
+  --color-cat-energy: var(--cat-energy);
+  --color-cat-diet: var(--cat-diet);
+  --color-cat-shopping: var(--cat-shopping);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* A clearly visible focus indicator for keyboard users on every interactive
+ * element. Never remove focus styling without an equivalent replacement. */
+:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Respect users who prefer reduced motion: disable non-essential animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visually hidden but available to screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link: hidden until focused, then pinned to the top-left. */
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  z-index: 50;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 0.5rem 1rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 0;
+}
