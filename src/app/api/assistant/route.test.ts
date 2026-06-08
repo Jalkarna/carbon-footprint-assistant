@@ -31,6 +31,21 @@ function makeRequest(body: unknown, raw = false): Request {
   });
 }
 
+function makeRequestWithHeaders(
+  body: unknown,
+  extraHeaders: Record<string, string>,
+): Request {
+  return new Request("http://localhost/api/assistant", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-forwarded-for": "1.2.3.4",
+      ...extraHeaders,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
 const validBody = {
   messages: [{ role: "user", content: "How am I doing?" }],
   activities: [
@@ -96,5 +111,59 @@ describe("POST /api/assistant", () => {
       last = await POST(makeRequest(validBody));
     }
     expect(last?.status).toBe(429);
+  });
+
+  it("allows same-origin requests with a matching Origin header", async () => {
+    const res = await POST(
+      makeRequestWithHeaders(validBody, { origin: "http://localhost" }),
+    );
+    expect(res.status).toBe(200);
+  });
+
+  it("rejects cross-origin requests with 403", async () => {
+    const res = await POST(
+      makeRequestWithHeaders(validBody, { origin: "https://evil.example" }),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects a malformed Origin header", async () => {
+    const res = await POST(
+      makeRequestWithHeaders(validBody, { origin: "not a url" }),
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects messages that are empty after sanitization", async () => {
+    const res = await POST(
+      makeRequest({
+        messages: [{ role: "user", content: "​​​" }],
+        activities: [],
+      }),
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it("still answers when control characters are stripped from the message", async () => {
+    const res = await POST(
+      makeRequest({
+        messages: [{ role: "user", content: "How am I doing?" }],
+        activities: [],
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("Hello world");
+  });
+
+  it("returns 400 when an activity quantity is negative", async () => {
+    const res = await POST(
+      makeRequest({
+        messages: [{ role: "user", content: "hi" }],
+        activities: [
+          { id: "1", factorId: "car_petrol", quantity: -5, date: "2026-01-01" },
+        ],
+      }),
+    );
+    expect(res.status).toBe(400);
   });
 });

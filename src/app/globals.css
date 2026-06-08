@@ -1,104 +1,306 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. Colours are chosen to meet WCAG AA contrast against their
- * paired surfaces. Both light and dark schemes are defined and switch with the
- * user's system preference.
+ * ─────────────────────────────────────────────────────────────────────────
+ *  Carbon — design system
+ * ─────────────────────────────────────────────────────────────────────────
+ *  A restrained, dark-first interface. Hairline borders, layered near-black
+ *  surfaces, and a single disciplined green accent. No gradient text, no glow,
+ *  no glassmorphism noise — depth comes from contrast and 1px borders.
+ *
+ *  All foreground/background pairings are chosen to meet WCAG AA. Light mode
+ *  is a complete, deliberate override rather than an afterthought.
  */
+
 :root {
-  --background: #f6f8f6;
-  --surface: #ffffff;
-  --surface-muted: #eef2ee;
-  --foreground: #11221a;
-  --muted-foreground: #4b5a52;
-  --border: #d7e0d9;
-  --primary: #0f7a4d;
-  --primary-foreground: #ffffff;
-  --primary-hover: #0c6440;
-  --ring: #0f7a4d;
+  /* ── Surfaces (dark, layered from base → raised) ── */
+  --bg: #0a0b0d;
+  --bg-subtle: #0e1013;
+  --surface: #131619;
+  --surface-2: #181b1f;
+  --surface-3: #1e2227;
+  --overlay: rgba(0, 0, 0, 0.6);
 
-  /* Semantic colours for insight levels (AA against --surface). */
-  --win: #0f7a4d;
-  --win-bg: #e3f3ea;
-  --opportunity: #9a5b00;
-  --opportunity-bg: #fbf0dd;
-  --info: #1f5fa8;
-  --info-bg: #e6effa;
+  /* ── Text ── */
+  --fg: #f4f6f5;
+  --fg-muted: #9aa4a0;
+  --fg-subtle: #6b7570;
 
-  /* Category accents, used consistently across charts and labels. */
-  --cat-transport: #2563b8;
-  --cat-energy: #b8860b;
-  --cat-diet: #0f7a4d;
-  --cat-shopping: #8b3fa8;
-}
+  /* ── Lines ── */
+  --border: #23282d;
+  --border-strong: #2f353b;
+  --border-faint: #1a1e22;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0c1410;
-    --surface: #121e18;
-    --surface-muted: #18271f;
-    --foreground: #eaf2ec;
-    --muted-foreground: #a3b3aa;
-    --border: #273930;
-    --primary: #34c585;
-    --primary-foreground: #07150d;
-    --primary-hover: #4ad295;
-    --ring: #34c585;
+  /* ── Accent: a single considered green ── */
+  --accent: #4ade80;
+  --accent-strong: #22c55e;
+  --accent-fg: #052e16;
+  --accent-subtle: rgba(74, 222, 128, 0.1);
+  --accent-line: rgba(74, 222, 128, 0.22);
 
-    --win: #4ad295;
-    --win-bg: #142a1f;
-    --opportunity: #e0a93f;
-    --opportunity-bg: #2c2415;
-    --info: #6fa8e6;
-    --info-bg: #16243a;
+  /* ── Semantic ── */
+  --positive: #4ade80;
+  --positive-subtle: rgba(74, 222, 128, 0.1);
+  --caution: #fbbf24;
+  --caution-subtle: rgba(251, 191, 36, 0.1);
+  --critical: #f87171;
+  --critical-subtle: rgba(248, 113, 113, 0.1);
+  --neutral: #60a5fa;
+  --neutral-subtle: rgba(96, 165, 250, 0.1);
 
-    --cat-transport: #6fa8e6;
-    --cat-energy: #e0a93f;
-    --cat-diet: #4ad295;
-    --cat-shopping: #c98fe0;
-  }
-}
+  /* ── Category accents (calm, distinguishable) ── */
+  --cat-transport: #60a5fa;
+  --cat-energy: #fbbf24;
+  --cat-diet: #4ade80;
+  --cat-shopping: #c084fc;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-muted: var(--surface-muted);
-  --color-foreground: var(--foreground);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-border: var(--border);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary-hover: var(--primary-hover);
-  --color-ring: var(--ring);
-  --color-win: var(--win);
-  --color-win-bg: var(--win-bg);
-  --color-opportunity: var(--opportunity);
-  --color-opportunity-bg: var(--opportunity-bg);
-  --color-info: var(--info);
-  --color-info-bg: var(--info-bg);
-  --color-cat-transport: var(--cat-transport);
-  --color-cat-energy: var(--cat-energy);
-  --color-cat-diet: var(--cat-diet);
-  --color-cat-shopping: var(--cat-shopping);
+  /* ── Radii ── */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-xl: 20px;
+
+  /* ── Elevation (subtle, never heavy) ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.32);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+  /* ── Typography ── */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+:root[data-theme="light"] {
+  --bg: #f7f8f7;
+  --bg-subtle: #f1f3f1;
+  --surface: #ffffff;
+  --surface-2: #f7f9f8;
+  --surface-3: #eef1f0;
+  --overlay: rgba(15, 23, 20, 0.4);
+
+  --fg: #0f1512;
+  --fg-muted: #586660;
+  --fg-subtle: #5d6862;
+
+  --border: #e2e7e4;
+  --border-strong: #d2d9d5;
+  --border-faint: #edf0ee;
+
+  --accent: #147334;
+  --accent-strong: #166534;
+  --accent-fg: #ffffff;
+  --accent-subtle: rgba(22, 163, 74, 0.08);
+  --accent-line: rgba(22, 163, 74, 0.2);
+
+  --positive: #147334;
+  --positive-subtle: rgba(22, 163, 74, 0.09);
+  --caution: #a44708;
+  --caution-subtle: rgba(180, 83, 9, 0.09);
+  --critical: #d11f1f;
+  --critical-subtle: rgba(220, 38, 38, 0.08);
+  --neutral: #2563eb;
+  --neutral-subtle: rgba(37, 99, 235, 0.08);
+
+  --cat-transport: #2563eb;
+  --cat-energy: #b45309;
+  --cat-diet: #16a34a;
+  --cat-shopping: #9333ea;
+
+  --shadow-sm: 0 1px 2px rgba(15, 23, 20, 0.06);
+  --shadow-md: 0 4px 16px rgba(15, 23, 20, 0.08);
+  --shadow-lg: 0 12px 40px rgba(15, 23, 20, 0.12);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-faint: var(--border-faint);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-fg: var(--accent-fg);
+  --color-positive: var(--positive);
+  --color-caution: var(--caution);
+  --color-critical: var(--critical);
+  --color-neutral: var(--neutral);
+  --color-cat-transport: var(--cat-transport);
+  --color-cat-energy: var(--cat-energy);
+  --color-cat-diet: var(--cat-diet);
+  --color-cat-shopping: var(--cat-shopping);
+
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ── Base ───────────────────────────────────────────── */
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  height: 100%;
 }
 
-/* A clearly visible focus indicator for keyboard users on every interactive
- * element. Never remove focus styling without an equivalent replacement. */
+html {
+  /* Default to dark; the theme provider sets data-theme explicitly. */
+  color-scheme: dark;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent-subtle);
+  color: var(--fg);
+}
+
+/* Subtle grain-free dotted backdrop used on marketing surfaces. */
+.bg-grid {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    var(--border) 1px,
+    transparent 0
+  );
+  background-size: 28px 28px;
+}
+
+/* ── Numerals ───────────────────────────────────────── */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* ── Focus ──────────────────────────────────────────── */
 :focus-visible {
-  outline: 3px solid var(--ring);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
-/* Respect users who prefer reduced motion: disable non-essential animation. */
+/* ── Animations (quiet, purposeful) ─────────────────── */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes pulse-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: var(--draw-length, 1000);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes bar-grow {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease both;
+}
+.animate-rise {
+  animation: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Staggered rise for lists/grids. */
+.stagger > * {
+  animation: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.stagger > *:nth-child(1) { animation-delay: 0.02s; }
+.stagger > *:nth-child(2) { animation-delay: 0.06s; }
+.stagger > *:nth-child(3) { animation-delay: 0.1s; }
+.stagger > *:nth-child(4) { animation-delay: 0.14s; }
+.stagger > *:nth-child(5) { animation-delay: 0.18s; }
+.stagger > *:nth-child(6) { animation-delay: 0.22s; }
+
+/* Thinking indicator for the assistant. */
+.thinking-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--fg-muted);
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+.thinking-dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.thinking-dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ── Scrollbars ─────────────────────────────────────── */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+.scroll-thin::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-subtle);
+  background-clip: padding-box;
+}
+
+/* ── Reduced motion ─────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -110,7 +312,7 @@ body {
   }
 }
 
-/* Visually hidden but available to screen readers. */
+/* ── Accessibility helpers ──────────────────────────── */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -123,18 +325,29 @@ body {
   border: 0;
 }
 
-/* Skip link: hidden until focused, then pinned to the top-left. */
 .skip-link {
   position: absolute;
-  left: 0.5rem;
-  top: -3rem;
-  z-index: 50;
-  background: var(--primary);
-  color: var(--primary-foreground);
+  left: 0.75rem;
+  top: -3.5rem;
+  z-index: 100;
+  background: var(--accent);
+  color: var(--accent-fg);
   padding: 0.5rem 1rem;
-  border-radius: 0 0 0.5rem 0.5rem;
+  border-radius: 0 0 var(--r-md) var(--r-md);
+  font-weight: 600;
+  font-size: 0.875rem;
   transition: top 0.15s ease;
 }
 .skip-link:focus {
   top: 0;
+}
+
+/* ── Disclosure ─────────────────────────────────────── */
+details > summary {
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
 }

@@ -9,6 +9,7 @@ import {
   MAX_HISTORY_MESSAGES,
 } from "@/lib/ai/prompt";
 import { rateLimit } from "@/lib/ai/rate-limit";
+import { sanitizeText } from "@/lib/security/sanitize";
 
 // Run on the Node.js runtime so the server-only AI client and its key stay
 // strictly server-side.
@@ -33,6 +34,21 @@ function clientKey(req: Request): string {
   return fwd?.split(",")[0]?.trim() || "anonymous";
 }
 
+/**
+ * Reject cross-site requests. A browser sends `Origin` (or at least `Referer`)
+ * on cross-origin POSTs; requiring it to match the host is a lightweight CSRF
+ * defense for this state-changing, credential-free endpoint.
+ */
+function isSameOrigin(req: Request): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return true; // same-origin fetches may omit Origin; allowed.
+  try {
+    return new URL(origin).host === new URL(req.url).host;
+  } catch {
+    return false;
+  }
+}
+
 function jsonError(message: string, status: number): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
@@ -46,6 +62,10 @@ export async function POST(req: Request): Promise<Response> {
       "The AI assistant is not configured on this deployment. The dashboard insights still work fully.",
       503,
     );
+  }
+
+  if (!isSameOrigin(req)) {
+    return jsonError("Cross-origin requests are not allowed.", 403);
   }
 
   const limit = rateLimit(clientKey(req));
@@ -65,9 +85,22 @@ export async function POST(req: Request): Promise<Response> {
     return jsonError(parsed.error.issues[0]?.message ?? "Invalid request.", 400);
   }
 
+  // Sanitize each message before it touches the prompt builder: strip control
+  // and invisible characters that can be used to obfuscate prompt injection.
+  const sanitizedMessages = parsed.data.messages
+    .map((m) => ({
+      role: m.role,
+      content: sanitizeText(m.content, MAX_USER_MESSAGE_LENGTH),
+    }))
+    .filter((m) => m.content.length > 0);
+
+  if (sanitizedMessages.length === 0) {
+    return jsonError("Message content is empty after sanitization.", 400);
+  }
+
   // Ground the model in the user's real, deterministically-computed footprint.
   const analysis = analyzeFootprint(parsed.data.activities);
-  const messages = buildMessages(analysis, parsed.data.messages);
+  const messages = buildMessages(analysis, sanitizedMessages);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({

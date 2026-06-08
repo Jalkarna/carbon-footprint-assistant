@@ -27,6 +27,15 @@ Your job:
 - Give specific, practical, encouraging advice tailored to the user's actual logged activities.
 - Keep answers concise (a few short paragraphs or a tight list). Plain language, no jargon.
 
+Logging activities for the user:
+- If the user asks you to log an activity (e.g. "log 10 km by train" or "add a beef meal for today"), you MUST do so by appending a special marker at the very end of your reply, on its own line.
+- The marker format is: [LOG_ACTIVITY:{"factorId":"<id>","quantity":<number>,"date":"<YYYY-MM-DD>"}]
+- Valid factorIds are exactly: car_petrol, car_electric, bus, train, flight_short, bike_walk, electricity, natural_gas, meal_beef, meal_poultry, meal_vegetarian, meal_vegan, clothing_item, electronics_spend.
+- Use today's date (from the conversation context) unless the user specifies a different date.
+- You may emit multiple markers (one per line) if the user asks to log several things at once.
+- Do NOT invent factorIds outside the list above. If you cannot map the request to a known factorId, tell the user instead of guessing.
+- The marker is machine-readable and will be stripped from the displayed reply — the user will see a confirmation toast instead.
+
 Boundaries:
 - Stay on the topic of carbon footprint, sustainability, and the user's logged data.
 - If asked something unrelated, briefly redirect to how you can help with their footprint.
@@ -48,12 +57,14 @@ function categoryLines(byCategory: Record<Category, number>): string {
  * user's real data rather than guesses.
  */
 export function buildFootprintContext(analysis: FootprintAnalysis): string {
+  const today = new Date().toISOString().slice(0, 10);
   if (analysis.activityCount === 0) {
-    return "FOOTPRINT CONTEXT:\nThe user has not logged any activities yet. Encourage them to log a trip, meal, or energy use to get started.";
+    return `FOOTPRINT CONTEXT:\nToday's date: ${today}.\nThe user has not logged any activities yet. Encourage them to log a trip, meal, or energy use to get started.`;
   }
 
   const lines = [
     "FOOTPRINT CONTEXT (the user's real logged data):",
+    `- Today's date: ${today}.`,
     `- Total logged footprint: ${analysis.totalKg} kg CO2e across ${analysis.activityCount} activities.`,
     `- Daily average: ${analysis.dailyAverageKg} kg CO2e.`,
     `- Global average is ~${BENCHMARKS.globalDailyAvg} kg/day; a climate-friendly target is ~${BENCHMARKS.sustainableDailyTarget} kg/day.`,

@@ -186,18 +186,21 @@ On Vercel, set `DO_INFERENCE_API_KEY` as an encrypted environment variable
 Three layers, all runnable in CI (see `.github/workflows/ci.yml`):
 
 1. **Unit tests** — the emissions engine, insights engine, store, validation,
-   AI prompt builder, SSE stream parser, and rate limiter. The decision logic is
-   covered exhaustively because it is where correctness matters most.
-2. **Component tests** — the activity form (validation, live-region feedback,
-   dynamic units), the breakdown chart (semantic table), and the insight list.
-3. **End-to-end + accessibility** — Playwright drives real user flows (log →
-   see breakdown → persist across reload → remove) and runs **axe-core**
-   accessibility scans on both the empty and populated dashboard, asserting
+   AI prompt builder, SSE stream parser, rate limiter, AI config resolution,
+   and the security utilities (input sanitization, header policy). The decision
+   logic is covered exhaustively because it is where correctness matters most.
+2. **Component tests** — the UI primitives (Button, Badge, accessible
+   ProgressRing) and the safe Markdown renderer (asserting it cannot inject raw
+   HTML), rendered with Testing Library.
+3. **End-to-end + accessibility** — Playwright drives real user flows across the
+   multi-page app (land → open app → log → see breakdown → persist across reload
+   → remove) and runs **axe-core** accessibility scans on the landing page, the
+   empty dashboard, the log page, and the populated dashboard, asserting
    **zero** WCAG 2 A/AA violations.
 
 ```bash
-npm run test         # 70+ unit/component tests
-npm run test:e2e     # 6 e2e specs incl. 2 axe scans
+npm run test         # ~197 unit/component tests
+npm run test:e2e     # 10 e2e specs incl. 4 axe scans
 ```
 
 ---
@@ -206,11 +209,15 @@ npm run test:e2e     # 6 e2e specs incl. 2 axe scans
 
 Accessibility was designed in, not bolted on:
 
-- **Semantic structure** — one `<h1>`, sectioned headings, landmarks
-  (`header`/`main`/`footer`), and a **skip-to-content** link.
+- **Semantic structure** — one `<h1>` per page, sectioned headings, landmarks
+  (`header`/`main`/`footer`/`nav`), and a **skip-to-content** link.
 - **Forms** — every control has an associated `<label>`; hints and errors are
   wired with `aria-describedby`; errors use `role="alert"`; successful logging
   is announced via a polite live region.
+- **Custom controls are fully accessible** — the activity picker is a custom
+  ARIA `listbox` (keyboard navigation, typeahead, `aria-activedescendant`), the
+  progress ring exposes `role="progressbar"` with an accessible name, and
+  dialogs trap focus and restore it on close.
 - **The breakdown chart is a semantic `<table>`** with a caption and row
   headers, so it is fully meaningful to screen readers and works without CSS.
   Colour is never the only signal — every value is also text.
@@ -219,7 +226,7 @@ Accessibility was designed in, not bolted on:
 - **Keyboard** — everything is operable by keyboard with a strong, always-
   visible `:focus-visible` indicator.
 - **Contrast** — colour tokens meet WCAG AA against their surfaces in both light
-  and dark themes.
+  and dark themes (verified by the axe scans in CI).
 - **Reduced motion** — animations are disabled under
   `prefers-reduced-motion: reduce`.
 
@@ -231,19 +238,34 @@ Accessibility was designed in, not bolted on:
 
 ## Security
 
-- **Secrets never reach the client.** The inference key is server-only and
-  excluded from the client bundle (verified). The browser talks only to
-  `/api/assistant`.
+A single source of truth for the security-header policy
+(`src/lib/security/headers.ts`) is enforced in both `next.config.ts` and
+`middleware.ts`, and is unit-tested.
+
+- **Secrets never reach the client.** The inference key is server-only
+  (`server-only` guard) and excluded from the client bundle (verified in CI by
+  scanning the built static chunks). The browser talks only to `/api/assistant`.
 - **Input validation** with Zod on both the store and the API route; unknown
   factors, bad numbers, and oversized payloads are rejected.
-- **Rate limiting** on the AI route to bound abuse.
-- **Strict security headers** (`next.config.ts`): a tight Content-Security-
-  Policy (`connect-src 'self'`), `X-Frame-Options: DENY`,
-  `X-Content-Type-Options: nosniff`, a locked-down `Permissions-Policy`, and the
-  `X-Powered-By` header removed.
+- **Input sanitization** (`src/lib/security/sanitize.ts`) — Unicode
+  normalization plus removal of control and zero-width / bidirectional-override
+  characters before user text reaches the model, reducing prompt-injection
+  obfuscation. Companion helpers escape HTML and redact secret-shaped strings
+  from logs.
+- **Layered abuse protection** — a fixed-window rate limiter on the AI route,
+  a middleware body-size guard (`413` on oversized requests), and same-origin
+  enforcement (`403` on cross-origin POSTs) as a lightweight CSRF defense.
+- **Strict security headers** — a tight Content-Security-Policy
+  (`connect-src 'self'`, `object-src 'none'`, `frame-ancestors 'none'`,
+  `upgrade-insecure-requests`), `Strict-Transport-Security` with preload,
+  `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, cross-origin
+  isolation headers, a locked-down `Permissions-Policy`, and the `X-Powered-By`
+  header removed.
 - **Prompt-injection surface is bounded** — chat history is length- and
   count-clamped, and the system prompt forbids contradicting the computed data
   or revealing instructions.
+- **Disclosure** — a [`SECURITY.md`](./SECURITY.md) policy and a
+  `/.well-known/security.txt` contact file.
 
 ---
 
@@ -270,15 +292,22 @@ Accessibility was designed in, not bolted on:
 ```
 src/
   app/
-    layout.tsx              # root layout, metadata, skip link
-    page.tsx                # the dashboard
-    api/assistant/route.ts  # server-side AI endpoint (validation, rate limit, stream)
-  components/               # accessible UI (form, chart, insights, assistant, cards)
+    layout.tsx              # root layout, theme + toast providers, skip link
+    (marketing)/            # public pages: landing, methodology, about
+    (app)/                  # the product shell: dashboard, log, insights, assistant
+    api/assistant/route.ts  # server-side AI endpoint (validation, sanitize, rate limit, stream)
+  middleware.ts             # security headers + API body-size guard
+  components/
+    ui/                     # hand-built accessible primitives (Button, Select listbox, Dialog, …)
+    app/                    # feature components (forms, lists, dashboard, assistant)
+    charts/                 # semantic-table charts (breakdown, trend)
+    nav/ marketing/ theme/  # navigation, marketing chrome, theming
   lib/
     emissions/              # cited factors + pure calculation (the source of truth)
     insights/               # deterministic analysis & recommendation rules
     store/                  # Zustand store + Zod validation + helpers
-    ai/                     # server-only inference client, prompt builder, rate limiter
+    ai/                     # server-only inference client, prompt builder, rate limiter, config
+    security/               # header policy + input sanitization (unit-tested)
 e2e/                        # Playwright specs incl. axe accessibility scans
 ```
 

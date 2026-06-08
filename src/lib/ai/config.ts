@@ -6,13 +6,22 @@
  * every consumer of this module runs on the server (the API route).
  */
 
-/** Ordered fallback models. If one is unavailable we try the next. */
+/**
+ * Ordered fallback models — fast models first.
+ *
+ * Mirrors the DIGITALOCEAN_FALLBACK_MODELS chain from the twitter-automation
+ * project, with deepseek-4-flash prepended as the primary fast/cheap model.
+ * If any model fails before streaming starts, the next one is tried automatically.
+ */
 export const FALLBACK_MODELS: readonly string[] = [
-  "llama3.3-70b-instruct",
-  "deepseek-3.2",
-  "alibaba-qwen3-32b",
-  "openai-gpt-oss-120b",
-  "router:general",
+  "deepseek-4-flash",       // primary: fastest & cheapest
+  "kimi-k2.6",              // fast, strong
+  "deepseek-v4-pro",        // heavier DeepSeek
+  "deepseek-3.2",           // stable fallback
+  "gemma-4-31B-it",         // open weights
+  "llama3.3-70b-instruct",  // proven workhorse
+  "alibaba-qwen3-32b",      // additional fallback
+  "router:general",         // DO smart router as last resort
 ];
 
 export interface AIConfig {
