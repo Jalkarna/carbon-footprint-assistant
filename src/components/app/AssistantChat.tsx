@@ -107,7 +107,7 @@ export function AssistantChat() {
                     type="button"
                     onClick={() => submit(text)}
                     disabled={enabled === null || streaming}
-                    className="flex w-full items-center gap-3 rounded-[var(--r-md)] border border-[var(--border)] bg-surface px-3 py-2.5 text-left text-sm text-fg-muted transition-colors hover:border-[var(--border-strong)] hover:bg-surface-2 hover:text-fg disabled:opacity-50"
+                    className="flex w-full items-center gap-3 rounded-[var(--r-md)] border border-[var(--border)] bg-surface px-3 py-2.5 text-left text-sm text-fg-muted transition-colors hover:border-[var(--border-strong)] hover:bg-surface-2 hover:text-fg disabled:opacity-50 cursor-pointer"
                   >
                     <Icon
                       aria-hidden="true"
@@ -194,7 +194,7 @@ export function AssistantChat() {
               rows={1}
               placeholder="Ask about your footprint…"
               disabled={enabled === null}
-              className="scroll-thin max-h-40 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-fg placeholder:text-fg-subtle focus:outline-none"
+              className="scroll-thin max-h-40 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-fg placeholder:text-fg-subtle focus:outline-none focus-visible:outline-none focus-visible:ring-0"
             />
             {hasMessages && (
               <Button

@@ -61,7 +61,7 @@ export function ActivityList({ limit }: { limit?: number }) {
               type="button"
               onClick={() => removeActivity(activity.id)}
               aria-label={`Remove ${activity.label} on ${activity.date}`}
-              className="rounded-[var(--r-sm)] p-1.5 text-fg-subtle transition-colors hover:bg-[var(--critical-subtle)] hover:text-[var(--critical)]"
+              className="rounded-[var(--r-sm)] p-1.5 text-fg-subtle transition-colors hover:bg-[var(--critical-subtle)] hover:text-[var(--critical)] cursor-pointer"
             >
               <Trash2 aria-hidden="true" className="size-4" />
             </button>

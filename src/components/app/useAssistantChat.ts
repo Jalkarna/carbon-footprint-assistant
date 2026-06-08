@@ -90,18 +90,20 @@ export function useAssistantChat(
 
     setError(null);
     setStatus("streaming");
-    const next: ChatMessage[] = [
-      ...messagesRef.current,
-      { role: "user", content: trimmed },
-    ];
-    setMessages(next);
+
+    const userMsg: ChatMessage = { role: "user", content: trimmed };
+    const assistantMsg: ChatMessage = { role: "assistant", content: "" };
+
+    // Optimistically add both the user message and an empty assistant message (thinking state)
+    const nextWithAssistant = [...messagesRef.current, userMsg, assistantMsg];
+    setMessages(nextWithAssistant);
 
     try {
       const res = await fetch("/api/assistant", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: next,
+          messages: [...messagesRef.current, userMsg],
           activities: activitiesRef.current(),
         }),
       });
@@ -111,7 +113,6 @@ export function useAssistantChat(
         throw new Error(data.error ?? "The assistant is unavailable.");
       }
 
-      setMessages((m) => [...m, { role: "assistant", content: "" }]);
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       while (true) {
@@ -121,10 +122,12 @@ export function useAssistantChat(
         setMessages((m) => {
           const copy = [...m];
           const last = copy[copy.length - 1];
-          copy[copy.length - 1] = {
-            role: "assistant",
-            content: last.content + chunk,
-          };
+          if (last && last.role === "assistant") {
+            copy[copy.length - 1] = {
+              role: "assistant",
+              content: last.content + chunk,
+            };
+          }
           return copy;
         });
       }
@@ -184,6 +187,14 @@ export function useAssistantChat(
 
       setStatus("idle");
     } catch (err) {
+      setMessages((m) => {
+        const copy = [...m];
+        const last = copy[copy.length - 1];
+        if (last && last.role === "assistant" && last.content === "") {
+          return copy.slice(0, -1);
+        }
+        return m;
+      });
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setStatus("error");
     }

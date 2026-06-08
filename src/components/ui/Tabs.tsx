@@ -70,7 +70,7 @@ export function Tabs({
               onClick={() => setActive(item.id)}
               onKeyDown={(e) => onKeyDown(e, index)}
               className={cn(
-                "-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors",
+                "-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors cursor-pointer",
                 selected
                   ? "border-[var(--accent)] text-fg"
                   : "border-transparent text-fg-muted hover:text-fg",

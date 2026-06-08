@@ -28,6 +28,11 @@ export function middleware(request: NextRequest): NextResponse {
     }
   }
 
+  // Bypass response modifications for assistant API to allow streaming.
+  if (pathname === "/api/assistant") {
+    return NextResponse.next();
+  }
+
   const response = NextResponse.next();
   for (const { key, value } of securityHeaders()) {
     response.headers.set(key, value);
