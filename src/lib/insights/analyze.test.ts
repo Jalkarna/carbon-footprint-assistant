@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { analyzeFootprint, BENCHMARKS } from "@/lib/insights/analyze";
+import { getFactor } from "@/lib/emissions/factors";
 import type { Activity } from "@/lib/emissions/types";
 
 const day = (n: number) => `2026-01-${String(n).padStart(2, "0")}`;
@@ -101,5 +102,118 @@ describe("analyzeFootprint", () => {
       BENCHMARKS.sustainableDailyTarget,
     );
     expect(BENCHMARKS.sustainableDailyTarget).toBeGreaterThan(0);
+  });
+
+  it("nudges high home-energy use with a ~15% saving estimate", () => {
+    // 50 kWh electricity = 20 kg, well above the 5 kg trigger.
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "electricity", quantity: 50, date: day(1) },
+    ]);
+    const insight = analysis.insights.find((i) => i.id === "energy-efficiency");
+    expect(insight).toBeDefined();
+    expect(insight?.category).toBe("energy");
+    // 20 kg * 0.15 = 3.0 kg.
+    expect(insight?.potentialSavingKg).toBe(3);
+  });
+
+  it("does not fire opportunity rules below their thresholds", () => {
+    // One beef meal trips the diet rule, so use sub-threshold inputs only.
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "car_petrol", quantity: 5, date: day(1) }, // < 20 km
+      { id: "2", factorId: "electricity", quantity: 5, date: day(1) }, // 2 kg < 5
+    ]);
+    const ids = analysis.insights.map((i) => i.id);
+    expect(ids).not.toContain("transport-modeshift");
+    expect(ids).not.toContain("energy-efficiency");
+    expect(ids).not.toContain("diet-redmeat");
+  });
+
+  it("keeps the red-meat saving in lock-step with the emission factors", () => {
+    // This guards the DRY refactor: the saving must equal the canonical
+    // beef→poultry factor delta, not a hardcoded constant.
+    const beef = getFactor("meal_beef")!.perUnitKg;
+    const poultry = getFactor("meal_poultry")!.perUnitKg;
+    const meals = 4;
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "meal_beef", quantity: meals, date: day(1) },
+    ]);
+    const insight = analysis.insights.find((i) => i.id === "diet-redmeat");
+    expect(insight?.potentialSavingKg).toBeCloseTo(meals * (beef - poultry), 5);
+  });
+
+  it("flags carbon-dense air travel with a rail-based saving", () => {
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "flight_short", quantity: 1000, date: day(1) },
+    ]);
+    const insight = analysis.insights.find((i) => i.id === "transport-flights");
+    expect(insight).toBeDefined();
+    expect(insight?.category).toBe("transport");
+    // 1000 km * 0.5 replaceable * (0.246 - 0.035) factor delta = 105.5 kg.
+    const flight = getFactor("flight_short")!.perUnitKg;
+    const train = getFactor("train")!.perUnitKg;
+    expect(insight?.potentialSavingKg).toBeCloseTo(
+      1000 * 0.5 * (flight - train),
+      5,
+    );
+  });
+
+  it("does not flag flights below the distance threshold", () => {
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "flight_short", quantity: 100, date: day(1) },
+    ]);
+    expect(
+      analysis.insights.find((i) => i.id === "transport-flights"),
+    ).toBeUndefined();
+  });
+
+  it("nudges frequent clothing purchases toward second-hand", () => {
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "clothing_item", quantity: 4, date: day(1) },
+    ]);
+    const insight = analysis.insights.find((i) => i.id === "shopping-clothing");
+    expect(insight).toBeDefined();
+    expect(insight?.category).toBe("shopping");
+    // 4 items * 15 kg = 60 kg shopping; ~50% avoidable = 30 kg.
+    expect(insight?.potentialSavingKg).toBe(30);
+  });
+
+  it("does not nudge clothing below the item threshold", () => {
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "clothing_item", quantity: 2, date: day(1) },
+    ]);
+    expect(
+      analysis.insights.find((i) => i.id === "shopping-clothing"),
+    ).toBeUndefined();
+  });
+
+  it("celebrates a plant-forward diet as a win", () => {
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "meal_vegan", quantity: 3, date: day(1) },
+      { id: "2", factorId: "meal_vegetarian", quantity: 3, date: day(2) },
+    ]);
+    const win = analysis.insights.find((i) => i.id === "diet-plant-win");
+    expect(win).toBeDefined();
+    expect(win?.level).toBe("win");
+    // Wins carry no quantified saving.
+    expect(win?.potentialSavingKg).toBeUndefined();
+  });
+
+  it("does not award the plant-forward win below the meal threshold", () => {
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "meal_vegan", quantity: 2, date: day(1) },
+    ]);
+    expect(
+      analysis.insights.find((i) => i.id === "diet-plant-win"),
+    ).toBeUndefined();
+  });
+
+  it("ignores activities with unknown factors without crashing", () => {
+    const analysis = analyzeFootprint([
+      { id: "1", factorId: "made_up", quantity: 10, date: day(1) },
+      { id: "2", factorId: "meal_vegan", quantity: 1, date: day(1) },
+    ]);
+    // Only the valid vegan meal contributes.
+    expect(analysis.activityCount).toBe(1);
+    expect(analysis.topCategory?.category).toBe("diet");
   });
 });

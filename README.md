@@ -101,11 +101,18 @@ The core principle: **the intelligence is deterministic; the AI is a narrator.**
   reproducible, auditable, and testable.
 - **Context-driven recommendations.** The insights engine inspects your actual
   activities — how many red-meat meals, how many car-km, how much electricity —
-  and fires rules with concrete savings, ranked by impact. Example rules:
+  and fires rules with concrete savings, ranked by impact. The rules span every
+  category:
   - High red-meat diet → suggest swaps, quantified by the factor difference.
   - Significant petrol-car distance → suggest a mode shift to rail/bus.
+  - Carbon-dense **air travel** → flag it and quantify a rail alternative.
   - High home-energy use → efficiency nudge with a ~15% estimate.
-  - Lots of walking / cycling / rail → recognised as a **win**.
+  - Frequent new-clothing purchases → nudge toward second-hand / repair.
+  - Lots of walking / cycling / rail, or a **plant-forward diet** → recognised
+    as **wins** to reinforce good habits.
+
+  Every saving is derived from the canonical emission factors (never hardcoded),
+  so the advice can never drift from the underlying data.
 - **Grounded AI.** The assistant receives a `FOOTPRINT CONTEXT` block built from
   the deterministic analysis and a strict system prompt that keeps it on-topic
   and honest. If the AI is unconfigured or unavailable, the app degrades
@@ -194,13 +201,13 @@ Three layers, all runnable in CI (see `.github/workflows/ci.yml`):
    HTML), rendered with Testing Library.
 3. **End-to-end + accessibility** — Playwright drives real user flows across the
    multi-page app (land → open app → log → see breakdown → persist across reload
-   → remove) and runs **axe-core** accessibility scans on the landing page, the
-   empty dashboard, the log page, and the populated dashboard, asserting
-   **zero** WCAG 2 A/AA violations.
+   → remove) and runs **axe-core** accessibility scans on every page — landing,
+   empty dashboard, log, insights, assistant, and the populated dashboard —
+   asserting **zero** WCAG **2.1** A/AA violations.
 
 ```bash
-npm run test         # ~197 unit/component tests
-npm run test:e2e     # 10 e2e specs incl. 4 axe scans
+npm run test         # ~240 unit/component tests
+npm run test:e2e     # 12 e2e specs incl. 6 axe scans
 ```
 
 ---
@@ -226,13 +233,14 @@ Accessibility was designed in, not bolted on:
 - **Keyboard** — everything is operable by keyboard with a strong, always-
   visible `:focus-visible` indicator.
 - **Contrast** — colour tokens meet WCAG AA against their surfaces in both light
-  and dark themes (verified by the axe scans in CI).
+  and dark themes; non-text contrast (WCAG 2.1) is covered by the axe scans too.
 - **Reduced motion** — animations are disabled under
   `prefers-reduced-motion: reduce`.
 
 > Automated scans (axe-core) catch a meaningful subset of issues. Full WCAG
 > conformance also requires manual testing with assistive technology; the
-> automated suite here asserts no detectable A/AA violations.
+> automated suite here asserts no detectable WCAG 2.1 A/AA violations on any
+> page.
 
 ---
 

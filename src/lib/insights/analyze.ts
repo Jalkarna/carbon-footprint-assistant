@@ -1,6 +1,50 @@
-import { CATEGORY_META } from "../emissions/factors";
+import { CATEGORY_META, getFactor } from "../emissions/factors";
 import { summarize, computeActivities, round } from "../emissions/calculate";
 import type { Activity, Category } from "../emissions/types";
+
+/**
+ * Per-unit kg CO2e saved by swapping a higher-carbon activity for a
+ * lower-carbon one, derived from the canonical emission factors.
+ *
+ * Deriving the delta from {@link getFactor} keeps the recommendation engine in
+ * lock-step with the single source of truth: when a factor in `factors.ts`
+ * changes, the suggested savings update automatically instead of silently
+ * drifting from a hardcoded constant. Returns `0` if either factor is unknown
+ * or the swap would not reduce emissions.
+ */
+function swapSavingPerUnit(fromFactorId: string, toFactorId: string): number {
+  const from = getFactor(fromFactorId)?.perUnitKg ?? 0;
+  const to = getFactor(toFactorId)?.perUnitKg ?? 0;
+  return Math.max(0, from - to);
+}
+
+/**
+ * Heuristics used by the suggestion rules. These are deliberately conservative
+ * behavioural assumptions (not emission factors), named so their intent is
+ * explicit and they can be tuned in one place.
+ */
+const HEURISTICS = {
+  /** Share of petrol-car distance assumed realistically shiftable to transit. */
+  carDistanceShiftedToTransit: 0.3,
+  /** Typical share of home energy saved by efficiency measures (~15%). */
+  homeEnergyEfficiencySaving: 0.15,
+  /** Share of short-haul flight distance plausibly replaceable by rail. */
+  flightDistanceReplaceableByRail: 0.5,
+  /** Footprint avoided by buying second-hand / repairing instead of new (~50%). */
+  clothingSecondhandSaving: 0.5,
+} as const;
+
+/** Sum the quantity logged across one or more factor ids. */
+function sumQuantity(
+  computed: ReturnType<typeof computeActivities>,
+  ...factorIds: string[]
+): number {
+  const wanted = new Set(factorIds);
+  return computed.reduce(
+    (total, a) => (wanted.has(a.factorId) ? total + a.quantity : total),
+    0,
+  );
+}
 
 /**
  * Reference daily footprint benchmarks in kg CO2e.
@@ -72,12 +116,11 @@ type Rule = (ctx: RuleContext) => Insight | null;
 const RULES: Rule[] = [
   // High red-meat diet → suggest swaps with a concrete saving.
   (ctx) => {
-    const beef = ctx.computed
-      .filter((a) => a.factorId === "meal_beef")
-      .reduce((sum, a) => sum + a.quantity, 0);
+    const beef = sumQuantity(ctx.computed, "meal_beef");
     if (beef < 1) return null;
-    // Swapping a beef meal (6.6) for poultry (1.8) saves ~4.8 kg each.
-    const saving = round(beef * (6.6 - 1.8));
+    // Saving = each swapped red-meat meal moved to poultry, valued at the
+    // canonical factor difference (derived, never hardcoded).
+    const saving = round(beef * swapSavingPerUnit("meal_beef", "meal_poultry"));
     return {
       id: "diet-redmeat",
       level: "opportunity",
@@ -90,13 +133,12 @@ const RULES: Rule[] = [
 
   // Significant petrol-car distance → suggest mode shift.
   (ctx) => {
-    const carKm = ctx.computed
-      .filter((a) => a.factorId === "car_petrol")
-      .reduce((sum, a) => sum + a.quantity, 0);
+    const carKm = sumQuantity(ctx.computed, "car_petrol");
     if (carKm < 20) return null;
-    // Moving ~30% of those km to rail (0.17 → 0.035) saves the difference.
-    const shifted = carKm * 0.3;
-    const saving = round(shifted * (0.17 - 0.035));
+    // Move a realistic share of those km from petrol car to rail; the per-km
+    // saving is the canonical factor difference.
+    const shifted = carKm * HEURISTICS.carDistanceShiftedToTransit;
+    const saving = round(shifted * swapSavingPerUnit("car_petrol", "train"));
     return {
       id: "transport-modeshift",
       level: "opportunity",
@@ -110,7 +152,9 @@ const RULES: Rule[] = [
   // High electricity → efficiency nudge.
   (ctx) => {
     if (ctx.byCategory.energy < 5) return null;
-    const saving = round(ctx.byCategory.energy * 0.15);
+    const saving = round(
+      ctx.byCategory.energy * HEURISTICS.homeEnergyEfficiencySaving,
+    );
     return {
       id: "energy-efficiency",
       level: "opportunity",
@@ -121,11 +165,40 @@ const RULES: Rule[] = [
     };
   },
 
+  // Air travel is carbon-dense → flag it and quantify a rail alternative.
+  (ctx) => {
+    const flightKm = sumQuantity(ctx.computed, "flight_short");
+    if (flightKm < 300) return null;
+    const replaceable = flightKm * HEURISTICS.flightDistanceReplaceableByRail;
+    const saving = round(replaceable * swapSavingPerUnit("flight_short", "train"));
+    return {
+      id: "transport-flights",
+      level: "opportunity",
+      category: "transport",
+      title: "Flights dominate travel emissions",
+      detail: `You logged ${round(flightKm)} km of short-haul flights — among the most carbon-dense ways to travel. Taking the train for journeys where it's feasible could save around ${saving} kg CO2e.`,
+      potentialSavingKg: saving,
+    };
+  },
+
+  // Frequent new-clothing purchases → nudge toward second-hand / repair.
+  (ctx) => {
+    const items = sumQuantity(ctx.computed, "clothing_item");
+    if (items < 3) return null;
+    const saving = round(ctx.byCategory.shopping * HEURISTICS.clothingSecondhandSaving);
+    return {
+      id: "shopping-clothing",
+      level: "opportunity",
+      category: "shopping",
+      title: "Buy fewer, longer-lasting clothes",
+      detail: `You logged ${items} new clothing item${items === 1 ? "" : "s"}. Buying second-hand, repairing, or choosing durable pieces can roughly halve that impact — about ${saving} kg CO2e.`,
+      potentialSavingKg: saving,
+    };
+  },
+
   // Recognise low-carbon transport choices as a win.
   (ctx) => {
-    const greenKm = ctx.computed
-      .filter((a) => ["bike_walk", "train"].includes(a.factorId))
-      .reduce((sum, a) => sum + a.quantity, 0);
+    const greenKm = sumQuantity(ctx.computed, "bike_walk", "train");
     if (greenKm < 10) return null;
     return {
       id: "transport-win",
@@ -133,6 +206,19 @@ const RULES: Rule[] = [
       category: "transport",
       title: "Nice low-carbon travel",
       detail: `You covered ${round(greenKm)} km by train, bike, or on foot. That's a meaningfully lower-carbon choice than driving — keep it up.`,
+    };
+  },
+
+  // Recognise a plant-forward diet as a win to reinforce the habit.
+  (ctx) => {
+    const plantMeals = sumQuantity(ctx.computed, "meal_vegetarian", "meal_vegan");
+    if (plantMeals < 5) return null;
+    return {
+      id: "diet-plant-win",
+      level: "win",
+      category: "diet",
+      title: "Plant-forward eating pays off",
+      detail: `You logged ${plantMeals} plant-based meals. Vegetarian and vegan meals carry a fraction of the footprint of red meat — a habit worth keeping.`,
     };
   },
 ];

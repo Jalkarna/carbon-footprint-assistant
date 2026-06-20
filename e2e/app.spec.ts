@@ -1,5 +1,18 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+
+/**
+ * Run an axe accessibility scan against the current page and assert there are
+ * no violations. Scans against WCAG 2.0 *and* 2.1 at the A and AA levels, so
+ * newer success criteria (e.g. reflow, non-text contrast) are covered too.
+ */
+async function expectNoA11yViolations(page: Page) {
+  await page.getByRole("heading", { level: 1 }).waitFor();
+  const results = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .analyze();
+  expect(results.violations).toEqual([]);
+}
 
 /**
  * Core user-flow end-to-end tests plus automated accessibility scans.
@@ -109,31 +122,29 @@ test("landing page has no detectable accessibility violations", async ({
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("heading", { level: 1 }).waitFor();
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa"])
-    .analyze();
-  expect(results.violations).toEqual([]);
+  await expectNoA11yViolations(page);
 });
 
 test("the dashboard empty state has no accessibility violations", async ({
   page,
 }) => {
   await page.goto("/app");
-  await page.getByRole("heading", { level: 1 }).waitFor();
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa"])
-    .analyze();
-  expect(results.violations).toEqual([]);
+  await expectNoA11yViolations(page);
 });
 
 test("the log page has no accessibility violations", async ({ page }) => {
   await page.goto("/app/log");
-  await page.getByRole("heading", { level: 1 }).waitFor();
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa"])
-    .analyze();
-  expect(results.violations).toEqual([]);
+  await expectNoA11yViolations(page);
+});
+
+test("the insights page has no accessibility violations", async ({ page }) => {
+  await page.goto("/app/insights");
+  await expectNoA11yViolations(page);
+});
+
+test("the assistant page has no accessibility violations", async ({ page }) => {
+  await page.goto("/app/assistant");
+  await expectNoA11yViolations(page);
 });
 
 test("the dashboard with logged data has no accessibility violations", async ({
@@ -149,8 +160,5 @@ test("the dashboard with logged data has no accessibility violations", async ({
   await page.goto("/app");
   await expect(page.getByRole("table", { name: /by category/i })).toBeVisible();
 
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa"])
-    .analyze();
-  expect(results.violations).toEqual([]);
+  await expectNoA11yViolations(page);
 });
