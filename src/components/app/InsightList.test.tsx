@@ -45,9 +45,7 @@ describe("InsightList", () => {
   });
 
   it("shows the quantified saving when a positive potential saving exists", () => {
-    render(
-      <InsightList insights={[insight({ potentialSavingKg: 14.4 })]} />,
-    );
+    render(<InsightList insights={[insight({ potentialSavingKg: 14.4 })]} />);
     expect(screen.getByText(/Save up to/i)).toBeInTheDocument();
   });
 

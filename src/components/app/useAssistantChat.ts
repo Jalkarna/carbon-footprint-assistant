@@ -30,10 +30,12 @@ function extractLogMarkers(text: string): {
   payloads: string[];
 } {
   const payloads: string[] = [];
-  const clean = text.replace(LOG_ACTIVITY_RE, (_, json: string) => {
-    payloads.push(json);
-    return "";
-  }).trim();
+  const clean = text
+    .replace(LOG_ACTIVITY_RE, (_, json: string) => {
+      payloads.push(json);
+      return "";
+    })
+    .trim();
   return { clean, payloads };
 }
 
@@ -84,121 +86,134 @@ export function useAssistantChat(
     messagesRef.current = messages;
   }, [messages]);
 
-  const send = useCallback(async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
+  const send = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
 
-    setError(null);
-    setStatus("streaming");
+      setError(null);
+      setStatus("streaming");
 
-    const userMsg: ChatMessage = { role: "user", content: trimmed };
-    const assistantMsg: ChatMessage = { role: "assistant", content: "" };
+      const userMsg: ChatMessage = { role: "user", content: trimmed };
+      const assistantMsg: ChatMessage = { role: "assistant", content: "" };
 
-    // Optimistically add both the user message and an empty assistant message (thinking state)
-    const nextWithAssistant = [...messagesRef.current, userMsg, assistantMsg];
-    setMessages(nextWithAssistant);
+      // Optimistically add both the user message and an empty assistant message (thinking state)
+      const nextWithAssistant = [...messagesRef.current, userMsg, assistantMsg];
+      setMessages(nextWithAssistant);
 
-    try {
-      const res = await fetch("/api/assistant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: [...messagesRef.current, userMsg],
-          activities: activitiesRef.current(),
-        }),
-      });
+      try {
+        const res = await fetch("/api/assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: [...messagesRef.current, userMsg],
+            activities: activitiesRef.current(),
+          }),
+        });
 
-      if (!res.ok || !res.body) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "The assistant is unavailable.");
-      }
+        if (!res.ok || !res.body) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error ?? "The assistant is unavailable.");
+        }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          setMessages((m) => {
+            const copy = [...m];
+            const last = copy[copy.length - 1];
+            if (last && last.role === "assistant") {
+              copy[copy.length - 1] = {
+                role: "assistant",
+                content: last.content + chunk,
+              };
+            }
+            return copy;
+          });
+        }
+
+        // Once the stream is finished, process any [LOG_ACTIVITY:{...}] markers.
         setMessages((m) => {
           const copy = [...m];
           const last = copy[copy.length - 1];
-          if (last && last.role === "assistant") {
-            copy[copy.length - 1] = {
-              role: "assistant",
-              content: last.content + chunk,
-            };
+          if (last?.role !== "assistant") return m;
+
+          const { clean, payloads } = extractLogMarkers(last.content);
+
+          for (const json of payloads) {
+            try {
+              const parsed = JSON.parse(json) as {
+                factorId?: unknown;
+                quantity?: unknown;
+                date?: unknown;
+              };
+              const factorId =
+                typeof parsed.factorId === "string" ? parsed.factorId : null;
+              const quantity =
+                typeof parsed.quantity === "number" ? parsed.quantity : null;
+              const date =
+                typeof parsed.date === "string" &&
+                /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)
+                  ? parsed.date
+                  : null;
+
+              if (!factorId || quantity === null || !date) {
+                toast(
+                  "Assistant tried to log an activity but the data was incomplete.",
+                  "error",
+                );
+                continue;
+              }
+
+              if (!getFactor(factorId)) {
+                toast(
+                  `Assistant suggested an unknown activity type: ${factorId}.`,
+                  "error",
+                );
+                continue;
+              }
+
+              const result = addActivity({ factorId, quantity, date });
+              if (result.ok) {
+                const factor = getFactor(factorId);
+                toast(
+                  `Logged ${quantity} ${factor?.unit ?? "unit"} of ${factor?.label ?? factorId}.`,
+                  "success",
+                );
+              } else {
+                toast(`Could not log activity: ${result.error}`, "error");
+              }
+            } catch {
+              toast(
+                "Assistant tried to log an activity but the format was invalid.",
+                "error",
+              );
+            }
           }
+
+          copy[copy.length - 1] = { role: "assistant", content: clean };
           return copy;
         });
-      }
 
-      // Once the stream is finished, process any [LOG_ACTIVITY:{...}] markers.
-      setMessages((m) => {
-        const copy = [...m];
-        const last = copy[copy.length - 1];
-        if (last?.role !== "assistant") return m;
-
-        const { clean, payloads } = extractLogMarkers(last.content);
-
-        for (const json of payloads) {
-          try {
-            const parsed = JSON.parse(json) as {
-              factorId?: unknown;
-              quantity?: unknown;
-              date?: unknown;
-            };
-            const factorId =
-              typeof parsed.factorId === "string" ? parsed.factorId : null;
-            const quantity =
-              typeof parsed.quantity === "number" ? parsed.quantity : null;
-            const date =
-              typeof parsed.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)
-                ? parsed.date
-                : null;
-
-            if (!factorId || quantity === null || !date) {
-              toast("Assistant tried to log an activity but the data was incomplete.", "error");
-              continue;
-            }
-
-            if (!getFactor(factorId)) {
-              toast(`Assistant suggested an unknown activity type: ${factorId}.`, "error");
-              continue;
-            }
-
-            const result = addActivity({ factorId, quantity, date });
-            if (result.ok) {
-              const factor = getFactor(factorId);
-              toast(
-                `Logged ${quantity} ${factor?.unit ?? "unit"} of ${factor?.label ?? factorId}.`,
-                "success",
-              );
-            } else {
-              toast(`Could not log activity: ${result.error}`, "error");
-            }
-          } catch {
-            toast("Assistant tried to log an activity but the format was invalid.", "error");
+        setStatus("idle");
+      } catch (err) {
+        setMessages((m) => {
+          const copy = [...m];
+          const last = copy[copy.length - 1];
+          if (last && last.role === "assistant" && last.content === "") {
+            return copy.slice(0, -1);
           }
-        }
-
-        copy[copy.length - 1] = { role: "assistant", content: clean };
-        return copy;
-      });
-
-      setStatus("idle");
-    } catch (err) {
-      setMessages((m) => {
-        const copy = [...m];
-        const last = copy[copy.length - 1];
-        if (last && last.role === "assistant" && last.content === "") {
-          return copy.slice(0, -1);
-        }
-        return m;
-      });
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-      setStatus("error");
-    }
-  }, [addActivity, toast]);
+          return m;
+        });
+        setError(err instanceof Error ? err.message : "Something went wrong.");
+        setStatus("error");
+      }
+    },
+    [addActivity, toast],
+  );
 
   return { messages, status, enabled, error, send, reset };
 }

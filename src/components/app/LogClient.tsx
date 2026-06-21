@@ -37,7 +37,11 @@ export function LogClient() {
         description="Record the things you do — we convert them to CO2e using documented emission factors."
         actions={
           activities.length > 0 ? (
-            <Button variant="danger" size="sm" onClick={() => setConfirmClear(true)}>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={() => setConfirmClear(true)}
+            >
               <Trash2 aria-hidden="true" className="size-4" />
               Clear all
             </Button>

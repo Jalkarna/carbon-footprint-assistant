@@ -1,11 +1,5 @@
 export { Button, type ButtonProps } from "./Button";
-export {
-  Card,
-  CardHeader,
-  CardBody,
-  CardTitle,
-  CardDescription,
-} from "./Card";
+export { Card, CardHeader, CardBody, CardTitle, CardDescription } from "./Card";
 export { Badge } from "./Badge";
 export { Select, type SelectOption } from "./Select";
 export { Input, Textarea } from "./Input";

@@ -14,14 +14,14 @@
  * If any model fails before streaming starts, the next one is tried automatically.
  */
 export const FALLBACK_MODELS: readonly string[] = [
-  "deepseek-4-flash",       // primary: fastest & cheapest
-  "kimi-k2.6",              // fast, strong
-  "deepseek-v4-pro",        // heavier DeepSeek
-  "deepseek-3.2",           // stable fallback
-  "gemma-4-31B-it",         // open weights
-  "llama3.3-70b-instruct",  // proven workhorse
-  "alibaba-qwen3-32b",      // additional fallback
-  "router:general",         // DO smart router as last resort
+  "deepseek-4-flash", // primary: fastest & cheapest
+  "kimi-k2.6", // fast, strong
+  "deepseek-v4-pro", // heavier DeepSeek
+  "deepseek-3.2", // stable fallback
+  "gemma-4-31B-it", // open weights
+  "llama3.3-70b-instruct", // proven workhorse
+  "alibaba-qwen3-32b", // additional fallback
+  "router:general", // DO smart router as last resort
 ];
 
 export interface AIConfig {
@@ -43,7 +43,8 @@ export function getAIConfig(): AIConfig | null {
   if (!apiKey) return null;
 
   const baseURL = (
-    process.env.DO_INFERENCE_BASE_URL?.trim() || "https://inference.do-ai.run/v1"
+    process.env.DO_INFERENCE_BASE_URL?.trim() ||
+    "https://inference.do-ai.run/v1"
   ).replace(/\/$/, "");
 
   const envModel = process.env.DO_INFERENCE_MODEL?.trim();

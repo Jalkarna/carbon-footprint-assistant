@@ -26,7 +26,10 @@ import { POST, GET } from "@/app/api/assistant/route";
 function makeRequest(body: unknown, raw = false): Request {
   return new Request("http://localhost/api/assistant", {
     method: "POST",
-    headers: { "Content-Type": "application/json", "x-forwarded-for": "1.2.3.4" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-forwarded-for": "1.2.3.4",
+    },
     body: raw ? (body as string) : JSON.stringify(body),
   });
 }

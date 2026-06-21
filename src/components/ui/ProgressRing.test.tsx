@@ -23,7 +23,11 @@ describe("ProgressRing", () => {
 
   it("prefers an explicit ariaLabel", () => {
     render(
-      <ProgressRing value={10} sublabel="of target" ariaLabel="Goal progress" />,
+      <ProgressRing
+        value={10}
+        sublabel="of target"
+        ariaLabel="Goal progress"
+      />,
     );
     expect(screen.getByRole("progressbar")).toHaveAccessibleName(
       "Goal progress",

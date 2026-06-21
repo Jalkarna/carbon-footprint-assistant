@@ -151,12 +151,15 @@ Useful scripts:
 
 ```bash
 npm run build        # production build
-npm run lint         # eslint
+npm run lint         # eslint (typescript-eslint strict + stylistic)
+npm run format:check # prettier --check (npm run format to fix)
 npm run typecheck    # tsc --noEmit
 npm run test         # unit + component tests (Vitest)
 npm run test:coverage
 npm run test:e2e     # Playwright e2e + axe accessibility scans
 ```
+
+> A deeper design walkthrough lives in [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
 
 ---
 
@@ -206,9 +209,13 @@ Three layers, all runnable in CI (see `.github/workflows/ci.yml`):
    asserting **zero** WCAG **2.1** A/AA violations.
 
 ```bash
-npm run test         # ~240 unit/component tests
+npm run test         # ~250 unit/component tests
 npm run test:e2e     # 12 e2e specs incl. 6 axe scans
 ```
+
+Code quality is enforced, not just encouraged: **Prettier** for formatting and
+**typescript-eslint** (`strict` + `stylistic`) for linting, both gated in CI
+alongside the type-check, tests, build, and a secret-leak scan.
 
 ---
 

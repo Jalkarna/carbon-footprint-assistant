@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -257,7 +251,9 @@ export function Select({
                   onClick={() => selectIndex(index)}
                   className={cn(
                     "flex cursor-pointer items-center justify-between gap-2 rounded-[var(--r-sm)] px-2 py-1.5 text-sm",
-                    isActive ? "bg-[var(--accent-subtle)] text-fg" : "text-fg-muted",
+                    isActive
+                      ? "bg-[var(--accent-subtle)] text-fg"
+                      : "text-fg-muted",
                   )}
                 >
                   <span className="flex flex-col">

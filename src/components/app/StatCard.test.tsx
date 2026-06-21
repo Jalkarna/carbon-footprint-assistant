@@ -41,11 +41,16 @@ describe("StatCard", () => {
     const defaultGood = render(
       <StatCard label="a" value="1" delta={{ value: -5 }} />,
     );
-    const defaultGoodChip = defaultGood.getByText("5%").parentElement?.className;
+    const defaultGoodChip =
+      defaultGood.getByText("5%").parentElement?.className;
     defaultGood.unmount();
 
     const inverted = render(
-      <StatCard label="a" value="1" delta={{ value: 5, goodWhenNegative: false }} />,
+      <StatCard
+        label="a"
+        value="1"
+        delta={{ value: 5, goodWhenNegative: false }}
+      />,
     );
     const invertedChip = inverted.getByText("5%").parentElement?.className;
 

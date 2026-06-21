@@ -28,7 +28,12 @@ describe("Select (ARIA listbox)", () => {
 
   it("shows the selected option's label on the button", () => {
     render(
-      <Select options={options} value="train" onChange={() => {}} ariaLabel="Activity" />,
+      <Select
+        options={options}
+        value="train"
+        onChange={() => {}}
+        ariaLabel="Activity"
+      />,
     );
     expect(screen.getByRole("button")).toHaveTextContent("Train");
   });
@@ -36,7 +41,12 @@ describe("Select (ARIA listbox)", () => {
   it("opens the listbox on click and renders the options", async () => {
     const user = userEvent.setup();
     render(
-      <Select options={options} value="" onChange={() => {}} ariaLabel="Activity" />,
+      <Select
+        options={options}
+        value=""
+        onChange={() => {}}
+        ariaLabel="Activity"
+      />,
     );
     await user.click(screen.getByRole("button"));
     expect(screen.getByRole("listbox")).toBeInTheDocument();
@@ -48,7 +58,12 @@ describe("Select (ARIA listbox)", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <Select options={options} value="" onChange={onChange} ariaLabel="Activity" />,
+      <Select
+        options={options}
+        value=""
+        onChange={onChange}
+        ariaLabel="Activity"
+      />,
     );
     await user.click(screen.getByRole("button"));
     await user.click(screen.getByRole("option", { name: "Train" }));
@@ -59,7 +74,12 @@ describe("Select (ARIA listbox)", () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
     render(
-      <Select options={options} value="" onChange={onChange} ariaLabel="Activity" />,
+      <Select
+        options={options}
+        value=""
+        onChange={onChange}
+        ariaLabel="Activity"
+      />,
     );
     const button = screen.getByRole("button");
     button.focus();
@@ -72,7 +92,12 @@ describe("Select (ARIA listbox)", () => {
   it("marks the selected option with aria-selected", async () => {
     const user = userEvent.setup();
     render(
-      <Select options={options} value="beef" onChange={() => {}} ariaLabel="Activity" />,
+      <Select
+        options={options}
+        value="beef"
+        onChange={() => {}}
+        ariaLabel="Activity"
+      />,
     );
     await user.click(screen.getByRole("button"));
     expect(screen.getByRole("option", { name: /Beef meal/ })).toHaveAttribute(
@@ -84,7 +109,12 @@ describe("Select (ARIA listbox)", () => {
   it("closes on Escape and returns focus to the button", async () => {
     const user = userEvent.setup();
     render(
-      <Select options={options} value="" onChange={() => {}} ariaLabel="Activity" />,
+      <Select
+        options={options}
+        value=""
+        onChange={() => {}}
+        ariaLabel="Activity"
+      />,
     );
     const button = screen.getByRole("button");
     await user.click(button);
@@ -97,7 +127,12 @@ describe("Select (ARIA listbox)", () => {
   it("renders group headings only at group boundaries", async () => {
     const user = userEvent.setup();
     render(
-      <Select options={options} value="" onChange={() => {}} ariaLabel="Activity" />,
+      <Select
+        options={options}
+        value=""
+        onChange={() => {}}
+        ariaLabel="Activity"
+      />,
     );
     await user.click(screen.getByRole("button"));
     // Two distinct groups → two headings, not one per option.

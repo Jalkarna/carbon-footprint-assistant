@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  todayISO,
-  makeId,
-  activityInputSchema,
-} from "@/lib/store/helpers";
+import { todayISO, makeId, activityInputSchema } from "@/lib/store/helpers";
 
 describe("todayISO", () => {
   it("formats a date as YYYY-MM-DD", () => {

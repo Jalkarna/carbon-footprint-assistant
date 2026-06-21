@@ -48,9 +48,7 @@ export function GoalSetter() {
         <Target aria-hidden="true" className="size-4 text-[var(--accent)]" />
         <div>
           <CardTitle as="h2">Daily target</CardTitle>
-          <CardDescription>
-            Set a goal to track against.
-          </CardDescription>
+          <CardDescription>Set a goal to track against.</CardDescription>
         </div>
       </CardHeader>
       <CardBody>

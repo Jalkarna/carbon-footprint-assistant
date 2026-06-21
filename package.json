@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"e2e/**/*.ts\" \"*.{ts,mjs,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"e2e/**/*.ts\" \"*.{ts,mjs,json}\"",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -38,10 +40,13 @@
     "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^9",
     "eslint-config-next": "16.2.7",
+    "eslint-config-prettier": "^10.1.8",
     "jsdom": "^29.1.1",
     "playwright": "^1.60.0",
+    "prettier": "^3.8.4",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "typescript-eslint": "^8.60.1",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.8"
   }

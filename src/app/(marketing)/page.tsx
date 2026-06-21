@@ -77,8 +77,8 @@ export default function LandingPage() {
               Understand your footprint. Then actually shrink it.
             </h1>
             <p className="mx-auto mt-5 max-w-2xl text-pretty text-lg text-fg-muted">
-              Carbon turns your everyday choices into a clear, measured picture —
-              and gives you specific, data-grounded ways to do better.
+              Carbon turns your everyday choices into a clear, measured picture
+              — and gives you specific, data-grounded ways to do better.
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
@@ -119,8 +119,14 @@ export default function LandingPage() {
       {/* Stats strip */}
       <section className="border-b border-[var(--border)] bg-bg-subtle">
         <div className="mx-auto grid max-w-6xl grid-cols-1 gap-px overflow-hidden px-4 py-10 sm:grid-cols-3 md:px-6">
-          <Stat value={`${EMISSION_FACTORS.length}`} label="Documented emission factors" />
-          <Stat value={`${BENCHMARKS.globalDailyAvg} kg`} label="Global daily average, for context" />
+          <Stat
+            value={`${EMISSION_FACTORS.length}`}
+            label="Documented emission factors"
+          />
+          <Stat
+            value={`${BENCHMARKS.globalDailyAvg} kg`}
+            label="Global daily average, for context"
+          />
           <Stat value="100%" label="Computed locally, in your browser" />
         </div>
       </section>

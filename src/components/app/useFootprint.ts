@@ -2,7 +2,10 @@
 
 import { useMemo } from "react";
 import { useCarbonStore } from "@/lib/store/carbon-store";
-import { analyzeFootprint, type FootprintAnalysis } from "@/lib/insights/analyze";
+import {
+  analyzeFootprint,
+  type FootprintAnalysis,
+} from "@/lib/insights/analyze";
 import { useHydrated } from "@/components/useHydrated";
 
 export interface UseFootprint {

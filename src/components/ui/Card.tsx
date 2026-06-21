@@ -47,7 +47,10 @@ export function CardTitle({
 }) {
   return (
     <Tag
-      className={cn("text-base font-semibold tracking-tight text-fg", className)}
+      className={cn(
+        "text-base font-semibold tracking-tight text-fg",
+        className,
+      )}
       {...props}
     />
   );

@@ -91,7 +91,10 @@ export function dailyTotals(
   const byDate = new Map<string, number>();
 
   for (const activity of computed) {
-    byDate.set(activity.date, (byDate.get(activity.date) ?? 0) + activity.kgCO2e);
+    byDate.set(
+      activity.date,
+      (byDate.get(activity.date) ?? 0) + activity.kgCO2e,
+    );
   }
 
   return [...byDate.entries()]

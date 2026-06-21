@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { EMISSION_FACTORS, CATEGORY_META, CATEGORIES } from "@/lib/emissions/factors";
+import {
+  EMISSION_FACTORS,
+  CATEGORY_META,
+  CATEGORIES,
+} from "@/lib/emissions/factors";
 import { BENCHMARKS } from "@/lib/insights/analyze";
 
 export const metadata: Metadata = {
@@ -45,9 +49,10 @@ export default function MethodologyPage() {
           Benchmarks
         </h2>
         <p className="mt-3 text-fg-muted">
-          To make a bare number meaningful, your daily average is compared to two
-          references: the global per-person average (~{BENCHMARKS.globalDailyAvg}{" "}
-          kg/day, roughly 4 tonnes a year) and a climate-friendly target (~
+          To make a bare number meaningful, your daily average is compared to
+          two references: the global per-person average (~
+          {BENCHMARKS.globalDailyAvg} kg/day, roughly 4 tonnes a year) and a
+          climate-friendly target (~
           {BENCHMARKS.sustainableDailyTarget} kg/day, roughly 2 tonnes a year).
         </p>
       </section>
@@ -57,9 +62,9 @@ export default function MethodologyPage() {
           Emission factors
         </h2>
         <p className="mt-3 text-fg-muted">
-          These are representative figures drawn from public datasets and rounded
-          for clarity. They are estimates for educational guidance, not a
-          certified audit.
+          These are representative figures drawn from public datasets and
+          rounded for clarity. They are estimates for educational guidance, not
+          a certified audit.
         </p>
 
         {CATEGORIES.map((category) => {
@@ -101,7 +106,9 @@ export default function MethodologyPage() {
                         <td className="tnum px-4 py-2.5 whitespace-nowrap text-fg-muted">
                           {f.perUnitKg} kg / {f.unit}
                         </td>
-                        <td className="px-4 py-2.5 text-fg-subtle">{f.source}</td>
+                        <td className="px-4 py-2.5 text-fg-subtle">
+                          {f.source}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

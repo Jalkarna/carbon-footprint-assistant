@@ -21,7 +21,9 @@ describe("Markdown", () => {
   });
 
   it("renders a bullet list", () => {
-    const { container } = render(<Markdown content={"- one\n- two\n- three"} />);
+    const { container } = render(
+      <Markdown content={"- one\n- two\n- three"} />,
+    );
     expect(container.querySelectorAll("li")).toHaveLength(3);
   });
 

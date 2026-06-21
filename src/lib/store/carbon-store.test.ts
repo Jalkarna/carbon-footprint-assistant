@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { useCarbonStore } from "@/lib/store/carbon-store";
-import {
-  activityInputSchema,
-  makeId,
-  todayISO,
-} from "@/lib/store/helpers";
+import { activityInputSchema, makeId, todayISO } from "@/lib/store/helpers";
 
 // Reset store state between tests (localStorage is jsdom-backed).
 beforeEach(() => {
@@ -73,8 +69,16 @@ describe("activityInputSchema", () => {
 describe("useCarbonStore", () => {
   it("adds a valid activity to the front of the list", () => {
     const { addActivity } = useCarbonStore.getState();
-    const r1 = addActivity({ factorId: "car_petrol", quantity: 10, date: "2026-01-01" });
-    const r2 = addActivity({ factorId: "train", quantity: 5, date: "2026-01-02" });
+    const r1 = addActivity({
+      factorId: "car_petrol",
+      quantity: 10,
+      date: "2026-01-01",
+    });
+    const r2 = addActivity({
+      factorId: "train",
+      quantity: 5,
+      date: "2026-01-02",
+    });
     expect(r1.ok).toBe(true);
     expect(r2.ok).toBe(true);
     const { activities } = useCarbonStore.getState();
@@ -93,7 +97,11 @@ describe("useCarbonStore", () => {
 
   it("removes an activity by id", () => {
     const { addActivity } = useCarbonStore.getState();
-    const added = addActivity({ factorId: "train", quantity: 5, date: "2026-01-02" });
+    const added = addActivity({
+      factorId: "train",
+      quantity: 5,
+      date: "2026-01-02",
+    });
     expect(added.ok).toBe(true);
     if (added.ok) useCarbonStore.getState().removeActivity(added.activity.id);
     expect(useCarbonStore.getState().activities).toHaveLength(0);

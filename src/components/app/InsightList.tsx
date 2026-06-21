@@ -22,7 +22,10 @@ export function InsightList({ insights }: { insights: Insight[] }) {
   if (insights.length === 0) return null;
 
   return (
-    <ul className="stagger flex flex-col gap-3" aria-label="Personalized insights">
+    <ul
+      className="stagger flex flex-col gap-3"
+      aria-label="Personalized insights"
+    >
       {insights.map((insight) => {
         const meta = LEVEL_META[insight.level];
         const CatIcon = insight.category

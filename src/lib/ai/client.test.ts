@@ -91,12 +91,16 @@ describe("streamChat", () => {
   });
 
   it("streams text from the primary model when it succeeds", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      okResponse(['data: {"choices":[{"delta":{"content":"hi"}}]}\n\n']),
-    );
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        okResponse(['data: {"choices":[{"delta":{"content":"hi"}}]}\n\n']),
+      );
     vi.stubGlobal("fetch", fetchMock);
 
-    const out = await collect(streamChat([{ role: "user", content: "q" }], testConfig));
+    const out = await collect(
+      streamChat([{ role: "user", content: "q" }], testConfig),
+    );
 
     expect(out).toBe("hi");
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -114,11 +118,15 @@ describe("streamChat", () => {
       .fn()
       .mockResolvedValueOnce(new Response("nope", { status: 503 }))
       .mockResolvedValueOnce(
-        okResponse(['data: {"choices":[{"delta":{"content":"recovered"}}]}\n\n']),
+        okResponse([
+          'data: {"choices":[{"delta":{"content":"recovered"}}]}\n\n',
+        ]),
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    const out = await collect(streamChat([{ role: "user", content: "q" }], testConfig));
+    const out = await collect(
+      streamChat([{ role: "user", content: "q" }], testConfig),
+    );
 
     expect(out).toBe("recovered");
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -135,7 +143,9 @@ describe("streamChat", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    const out = await collect(streamChat([{ role: "user", content: "q" }], testConfig));
+    const out = await collect(
+      streamChat([{ role: "user", content: "q" }], testConfig),
+    );
     expect(out).toBe("ok");
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });

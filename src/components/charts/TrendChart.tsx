@@ -46,7 +46,10 @@ export function TrendChart({
   const y = (kg: number) => pad.top + innerH - (kg / max) * innerH;
 
   const linePath = data
-    .map((d, i) => `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.kg).toFixed(1)}`)
+    .map(
+      (d, i) =>
+        `${i === 0 ? "M" : "L"} ${x(i).toFixed(1)} ${y(d.kg).toFixed(1)}`,
+    )
     .join(" ");
 
   const areaPath =

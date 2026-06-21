@@ -69,7 +69,10 @@ export function Sidebar() {
                 className="flex items-center justify-between rounded-[var(--r-md)] px-3 py-1.5 text-sm text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
               >
                 {item.label}
-                <ArrowUpRight aria-hidden="true" className="size-3.5 text-fg-subtle" />
+                <ArrowUpRight
+                  aria-hidden="true"
+                  className="size-3.5 text-fg-subtle"
+                />
               </Link>
             </li>
           ))}

@@ -3,11 +3,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Activity } from "../emissions/types";
-import {
-  type ActivityInput,
-  activityInputSchema,
-  makeId,
-} from "./helpers";
+import { type ActivityInput, activityInputSchema, makeId } from "./helpers";
 
 /** Optional reduction goal: a daily footprint target in kg CO2e. */
 export interface Goal {
@@ -24,10 +20,12 @@ export interface CarbonState {
    * message describing why the input was rejected. Validation lives in the
    * shared zod schema so the same rules apply on the server.
    */
-  addActivity: (input: ActivityInput) => { ok: true; activity: Activity } | {
-    ok: false;
-    error: string;
-  };
+  addActivity: (input: ActivityInput) =>
+    | { ok: true; activity: Activity }
+    | {
+        ok: false;
+        error: string;
+      };
   removeActivity: (id: string) => void;
   setGoal: (dailyTargetKg: number | null) => void;
   clearAll: () => void;

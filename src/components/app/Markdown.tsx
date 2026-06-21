@@ -16,7 +16,8 @@ export function Markdown({ content }: { content: string }) {
     <>
       {blocks.map((block, i) => {
         const lines = block.split("\n");
-        const isList = lines.every((l) => /^\s*[-*]\s+/.test(l)) && lines.length > 0;
+        const isList =
+          lines.every((l) => /^\s*[-*]\s+/.test(l)) && lines.length > 0;
 
         if (isList) {
           return (

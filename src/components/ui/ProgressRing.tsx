@@ -48,7 +48,10 @@ export function ProgressRing({
       aria-valuenow={Math.round(value)}
       aria-valuemin={0}
       aria-valuemax={100}
-      className={cn("relative inline-flex items-center justify-center", className)}
+      className={cn(
+        "relative inline-flex items-center justify-center",
+        className,
+      )}
       style={{ width: size, height: size }}
     >
       <svg width={size} height={size} aria-hidden="true" className="-rotate-90">
@@ -70,7 +73,9 @@ export function ProgressRing({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1)" }}
+          style={{
+            transition: "stroke-dashoffset 0.6s cubic-bezier(0.22,1,0.36,1)",
+          }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center text-center">

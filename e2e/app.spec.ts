@@ -46,7 +46,10 @@ test("landing page loads with its hero heading", async ({ page }) => {
 
 test("landing page links through to the app", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: /start tracking/i }).first().click();
+  await page
+    .getByRole("link", { name: /start tracking/i })
+    .first()
+    .click();
   await expect(
     page.getByRole("heading", { level: 1, name: /footprint at a glance/i }),
   ).toBeVisible();
@@ -75,9 +78,7 @@ test("a user can log an activity and see it reflected", async ({ page }) => {
 
   // ...and the dashboard now renders the breakdown table.
   await page.goto("/app");
-  await expect(
-    page.getByRole("table", { name: /by category/i }),
-  ).toBeVisible();
+  await expect(page.getByRole("table", { name: /by category/i })).toBeVisible();
 
   // ...and an insight headline appears on the insights page.
   await page.goto("/app/insights");
@@ -100,7 +101,9 @@ test("logged data persists across reloads", async ({ page }) => {
   await page.reload();
 
   await expect(
-    page.getByRole("list", { name: /logged activities/i }).getByText(/petrol car/i),
+    page
+      .getByRole("list", { name: /logged activities/i })
+      .getByText(/petrol car/i),
   ).toBeVisible();
 });
 
@@ -110,10 +113,15 @@ test("a user can remove a logged activity", async ({ page }) => {
   await page.getByRole("button", { name: /add to log/i }).click();
 
   await expect(
-    page.getByRole("list", { name: /logged activities/i }).getByText(/petrol car/i),
+    page
+      .getByRole("list", { name: /logged activities/i })
+      .getByText(/petrol car/i),
   ).toBeVisible();
 
-  await page.getByRole("button", { name: /remove petrol car/i }).first().click();
+  await page
+    .getByRole("button", { name: /remove petrol car/i })
+    .first()
+    .click();
 
   await expect(page.getByText(/no activities logged yet/i)).toBeVisible();
 });
@@ -154,7 +162,9 @@ test("the dashboard with logged data has no accessibility violations", async ({
   await page.getByLabel(/amount/i).fill("40");
   await page.getByRole("button", { name: /add to log/i }).click();
   await expect(
-    page.getByRole("list", { name: /logged activities/i }).getByText(/petrol car/i),
+    page
+      .getByRole("list", { name: /logged activities/i })
+      .getByText(/petrol car/i),
   ).toBeVisible();
 
   await page.goto("/app");

@@ -47,7 +47,9 @@ function categoryLines(byCategory: Record<Category, number>): string {
   return (Object.entries(byCategory) as [Category, number][])
     .filter(([, kg]) => kg > 0)
     .sort((a, b) => b[1] - a[1])
-    .map(([category, kg]) => `  - ${CATEGORY_META[category].label}: ${kg} kg CO2e`)
+    .map(
+      ([category, kg]) => `  - ${CATEGORY_META[category].label}: ${kg} kg CO2e`,
+    )
     .join("\n");
 }
 
@@ -101,12 +103,10 @@ export function buildMessages(
   analysis: FootprintAnalysis,
   history: ChatMessage[],
 ): { role: string; content: string }[] {
-  const trimmedHistory = history
-    .slice(-MAX_HISTORY_MESSAGES)
-    .map((m) => ({
-      role: m.role,
-      content: m.content.slice(0, MAX_USER_MESSAGE_LENGTH),
-    }));
+  const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES).map((m) => ({
+    role: m.role,
+    content: m.content.slice(0, MAX_USER_MESSAGE_LENGTH),
+  }));
 
   return [
     { role: "system", content: SYSTEM_PROMPT },

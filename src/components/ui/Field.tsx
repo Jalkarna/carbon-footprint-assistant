@@ -45,10 +45,7 @@ export function Field({
     <div className={cn("flex flex-col gap-1.5", className)}>
       <label
         htmlFor={id}
-        className={cn(
-          "text-sm font-medium text-fg",
-          hideLabel && "sr-only",
-        )}
+        className={cn("text-sm font-medium text-fg", hideLabel && "sr-only")}
       >
         {label}
       </label>

@@ -109,9 +109,7 @@ export function DashboardClient() {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle as="h2">Daily emissions</CardTitle>
-            <CardDescription>
-              Your logged footprint over time.
-            </CardDescription>
+            <CardDescription>Your logged footprint over time.</CardDescription>
           </CardHeader>
           <CardBody>
             <TrendChart data={trend} />
@@ -179,7 +177,10 @@ export function DashboardClient() {
         <div className="mt-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-base font-semibold text-fg">
-              <Sparkles aria-hidden="true" className="size-4 text-[var(--accent)]" />
+              <Sparkles
+                aria-hidden="true"
+                className="size-4 text-[var(--accent)]"
+              />
               Top recommendations
             </h2>
             <Link

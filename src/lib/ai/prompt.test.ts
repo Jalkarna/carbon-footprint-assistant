@@ -41,14 +41,19 @@ describe("buildMessages", () => {
 
   it("clamps history length and message size", () => {
     const longContent = "x".repeat(MAX_USER_MESSAGE_LENGTH + 500);
-    const history = Array.from({ length: MAX_HISTORY_MESSAGES + 10 }, (_, i) => ({
-      role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
-      content: longContent,
-    }));
+    const history = Array.from(
+      { length: MAX_HISTORY_MESSAGES + 10 },
+      (_, i) => ({
+        role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
+        content: longContent,
+      }),
+    );
     const messages = buildMessages(analyzeFootprint([]), history);
     // 2 system messages + at most MAX_HISTORY_MESSAGES of history.
     expect(messages.length).toBeLessThanOrEqual(2 + MAX_HISTORY_MESSAGES);
     const lastUser = messages[messages.length - 1];
-    expect(lastUser.content.length).toBeLessThanOrEqual(MAX_USER_MESSAGE_LENGTH);
+    expect(lastUser.content.length).toBeLessThanOrEqual(
+      MAX_USER_MESSAGE_LENGTH,
+    );
   });
 });

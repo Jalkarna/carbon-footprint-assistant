@@ -16,9 +16,7 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3100",
     trace: "on-first-retry",
   },
-  projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-  ],
+  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
     command: "npm run start -- --port 3100",
     url: "http://127.0.0.1:3100",

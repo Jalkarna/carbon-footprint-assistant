@@ -50,7 +50,9 @@ export async function* streamChat(
       });
 
       if (!response.ok || !response.body) {
-        lastError = new Error(`Model ${model} returned HTTP ${response.status}`);
+        lastError = new Error(
+          `Model ${model} returned HTTP ${response.status}`,
+        );
         continue; // try the next fallback model
       }
 

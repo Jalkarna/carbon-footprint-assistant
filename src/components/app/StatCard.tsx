@@ -26,7 +26,7 @@ export function StatCard({
 }: StatCardProps) {
   const good =
     delta &&
-    (delta.goodWhenNegative ?? true ? delta.value <= 0 : delta.value >= 0);
+    ((delta.goodWhenNegative ?? true) ? delta.value <= 0 : delta.value >= 0);
 
   return (
     <Card className="p-5">

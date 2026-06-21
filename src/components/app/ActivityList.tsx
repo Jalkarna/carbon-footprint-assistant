@@ -28,7 +28,10 @@ export function ActivityList({ limit }: { limit?: number }) {
   }
 
   return (
-    <ul className="flex flex-col divide-y divide-[var(--border-faint)]" aria-label="Logged activities">
+    <ul
+      className="flex flex-col divide-y divide-[var(--border-faint)]"
+      aria-label="Logged activities"
+    >
       {shown.map((activity) => {
         const Icon = FACTOR_ICON[activity.factorId] ?? FACTOR_ICON.electricity;
         return (

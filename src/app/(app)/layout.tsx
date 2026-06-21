@@ -9,11 +9,7 @@ import { MobileHeader } from "@/components/nav/MobileHeader";
  * Mobile: a compact top header and a bottom tab bar, with the content between.
  * The main region is the page's primary landmark and the skip-link target.
  */
-export default function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       {/* Desktop sidebar */}

@@ -21,10 +21,7 @@ export function middleware(request: NextRequest): NextResponse {
   if (pathname.startsWith("/api/")) {
     const contentLength = Number(request.headers.get("content-length") ?? "0");
     if (contentLength > MAX_API_BODY_BYTES) {
-      return jsonResponse(
-        { error: "Request body too large." },
-        413,
-      );
+      return jsonResponse({ error: "Request body too large." }, 413);
     }
   }
 

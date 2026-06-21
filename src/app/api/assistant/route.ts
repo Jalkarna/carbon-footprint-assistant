@@ -26,7 +26,9 @@ const requestSchema = z.object({
     )
     .min(1, "At least one message is required")
     .max(MAX_HISTORY_MESSAGES * 2),
-  activities: z.array(activityInputSchema.extend({ id: z.string() })).max(5_000),
+  activities: z
+    .array(activityInputSchema.extend({ id: z.string() }))
+    .max(5_000),
 });
 
 function clientKey(req: Request): string {
@@ -82,7 +84,10 @@ export async function POST(req: Request): Promise<Response> {
 
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) {
-    return jsonError(parsed.error.issues[0]?.message ?? "Invalid request.", 400);
+    return jsonError(
+      parsed.error.issues[0]?.message ?? "Invalid request.",
+      400,
+    );
   }
 
   // Sanitize each message before it touches the prompt builder: strip control

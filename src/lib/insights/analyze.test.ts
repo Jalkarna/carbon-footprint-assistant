@@ -52,7 +52,9 @@ describe("analyzeFootprint", () => {
     const analysis = analyzeFootprint([
       { id: "1", factorId: "car_petrol", quantity: 100, date: day(1) },
     ]);
-    const insight = analysis.insights.find((i) => i.id === "transport-modeshift");
+    const insight = analysis.insights.find(
+      (i) => i.id === "transport-modeshift",
+    );
     expect(insight).toBeDefined();
     expect(insight?.potentialSavingKg).toBeGreaterThan(0);
   });

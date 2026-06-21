@@ -96,8 +96,8 @@ export function AssistantChat() {
                 How can I help with your footprint?
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-fg-muted">
-                Ask anything — answers are grounded in your real logged data, not
-                generic estimates.
+                Ask anything — answers are grounded in your real logged data,
+                not generic estimates.
               </p>
             </div>
             <ul className="grid w-full max-w-lg gap-2 sm:grid-cols-2">
@@ -162,7 +162,10 @@ export function AssistantChat() {
 
       {/* Error */}
       {error && (
-        <p role="alert" className="px-4 pb-2 text-center text-sm text-[var(--critical)]">
+        <p
+          role="alert"
+          className="px-4 pb-2 text-center text-sm text-[var(--critical)]"
+        >
           {error}
         </p>
       )}

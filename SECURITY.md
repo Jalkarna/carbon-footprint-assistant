@@ -87,6 +87,23 @@ headers, applied in both `next.config.ts` and `middleware.ts`:
   no account system and no analytics. Data leaves the device only when the user
   explicitly sends a message to the assistant.
 
+## Threat model
+
+The table below maps the application's main threats to the concrete controls
+that mitigate them. Each control is implemented in code and, where practical,
+covered by an automated test.
+
+| Threat | Vector | Mitigation | Enforced in |
+| --- | --- | --- | --- |
+| Secret disclosure | API key leaking into the client bundle or logs | `server-only` guard; key never `NEXT_PUBLIC_`; CI greps built chunks for the key/provider | `src/lib/ai/*`, `.github/workflows/ci.yml` |
+| Cross-site request forgery | Cross-origin POST to the AI route | Same-origin `Origin` check → `403` | `src/app/api/assistant/route.ts` |
+| Clickjacking | Framing the app in a hostile page | `X-Frame-Options: DENY` + CSP `frame-ancestors 'none'` | `src/lib/security/headers.ts` |
+| Cross-site scripting | Injected markup via model output or input | React escaping; custom Markdown renderer emits elements, never raw HTML; tight CSP | `src/components/app/Markdown.tsx`, headers |
+| Prompt injection | Hostile text steering the model | Unicode/control-char sanitization; clamped history; constraining system prompt | `src/lib/security/sanitize.ts`, `src/lib/ai/prompt.ts` |
+| Resource abuse / DoS | Flooding the AI route; oversized bodies | Fixed-window rate limiter (`429`); body-size guard (`413`) | `src/lib/ai/rate-limit.ts`, `src/middleware.ts` |
+| Malformed / malicious input | Bad JSON, unknown factors, huge arrays | Strict Zod schemas with bounded sizes and an emission-factor allow-list | `src/app/api/assistant/route.ts`, `src/lib/store/helpers.ts` |
+| Sensitive data exposure | Centralised storage of personal data | Local-first: data stays in `localStorage`; no account, no backend DB, no analytics | client store |
+
 ## Dependencies
 
 Dependencies are pinned in `package.json` and audited with `npm audit`. We

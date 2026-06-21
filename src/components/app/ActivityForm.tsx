@@ -12,7 +12,14 @@ import { computeActivity } from "@/lib/emissions/calculate";
 import { useCarbonStore } from "@/lib/store/carbon-store";
 import { todayISO } from "@/lib/store/helpers";
 import { formatKg } from "@/components/ui";
-import { Button, Field, Input, Select, useToast, type SelectOption } from "@/components/ui";
+import {
+  Button,
+  Field,
+  Input,
+  Select,
+  useToast,
+  type SelectOption,
+} from "@/components/ui";
 
 /** Build grouped select options from the emission factors. */
 const FACTOR_OPTIONS: SelectOption[] = CATEGORIES.flatMap((category) =>

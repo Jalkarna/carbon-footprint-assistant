@@ -117,7 +117,10 @@ export function InsightsClient() {
       </Card>
 
       <h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-fg">
-        <TrendingDown aria-hidden="true" className="size-4 text-[var(--accent)]" />
+        <TrendingDown
+          aria-hidden="true"
+          className="size-4 text-[var(--accent)]"
+        />
         Recommendations
       </h2>
       <InsightList insights={analysis.insights} />
